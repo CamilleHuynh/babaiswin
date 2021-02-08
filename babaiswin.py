@@ -48,7 +48,7 @@ pg.display.set_caption('')
 
 # Import images
 
-images = Spritesheet("Data/Images/spritesheet.png")
+images = Spritesheet("spritesheet.png")
 
 test = pg.transform.scale(images.get_sprite(0*24,57*24,24,24),(90,90))
 baba = pg.transform.scale(images.get_sprite(1*24,0*24,24,24),(90,90))
