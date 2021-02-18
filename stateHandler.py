@@ -72,6 +72,7 @@ def isWin(list, win_list):
             return True
     return False
 
+# Return (observation, reward, done)
 def step(state,action):
     rule_list = []
     you_list = []
@@ -112,7 +113,10 @@ def step(state,action):
     
     state = stateToUp(newState,(4-action)%4)
     simplify(state)
-    return    
+    
+    terminal = isFinalState(newState)
+    reward = 1. if terminal else 0.
+    return newState, reward, terminal
 
 def stateToUp(state,action):
     newState = []

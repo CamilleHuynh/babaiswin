@@ -108,6 +108,7 @@ def init():
                 quitting = True
             elif event.type == pg.KEYDOWN:
                 quitting = True
+    pg.quit()
         
                 
 
