@@ -5,7 +5,7 @@
 # python babaiswin.py
 
 
-
+import numpy as np
 import pygame as pg
 from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
