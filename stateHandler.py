@@ -174,6 +174,3 @@ def isWinState(state):
                 
 def isFinalState(state):
     return isWinState(state) or isDeathState(state)
-
-def oldToNew(state):
-    return
