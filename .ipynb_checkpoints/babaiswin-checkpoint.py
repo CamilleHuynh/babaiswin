@@ -23,15 +23,12 @@ background_color = (225, 225, 225)
 # Ce qui est est affiché à l'écran est 
 # la matrice map
 
-#Si changement, modifier aussi liste de états dans stateHandler (getStateList())
 map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
          [["ft"], ["no"], ["wt"], ["no"], ["no"]],
          [["bt"], ["is"], ["yt"], ["no"], ["no"]],
          [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
          [["no"], ["is"], ["wo"], ["no"], ["no"]],
          [["no"], ["no"], ["no"], ["no"], ["fo"]]]
-
-
 
 state =[]
 for i in range(len(map[0])):
