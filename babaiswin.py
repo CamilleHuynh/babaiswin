@@ -1,9 +1,11 @@
 # python -m pip install -U pygame --user
 # To check it works :
 # python -m pygame.examples.aliens
+# To execute
+# python babaiswin.py
 
 
-
+import numpy as np
 import pygame as pg
 from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
@@ -22,13 +24,21 @@ background_color = (225, 225, 225)
 #text    : bt = baba; ft = flag; is = is; wt = win; yt = you
 # Ce qui est est affiché à l'écran est 
 # la matrice map
-
 map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
-         [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-         [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-         [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-         [["no"], ["is"], ["wo"], ["no"], ["no"]],
-         [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
+            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
+            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+            [["no"], ["is"], ["wo"], ["no"], ["no"]],
+            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+            
+def reset():
+    map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
+            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
+            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+            [["no"], ["is"], ["wo"], ["no"], ["no"]],
+            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+    return map
 
 state =[]
 for i in range(len(map[0])):
@@ -69,11 +79,13 @@ rock = pg.transform.scale(images.get_sprite(15*24,21*24,24,24),(90,90))
 
 def init():
     running = True
+    quitting = False
     while running:
         screen.fill(background_color)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False      
+                quitting = True
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     printRules(state)
@@ -101,7 +113,6 @@ def init():
             screen.fill(background_color)
             drawState(stateWin)
         pg.display.update()
-    quitting = False
     while not quitting:
         for event in pg.event.get():
             if event.type == pg.QUIT:
