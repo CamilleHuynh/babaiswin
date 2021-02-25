@@ -3,6 +3,7 @@ rValues = ["wt","yt"]
 stopList = ["wo"]
 pushList = ["ro","kt","bt","ft","is","wt","yt"]
 
+
 def updateRules(state,rule_list,you_list,win_list):
     nrow,ncol = len(state),len(state[0])
     rule_list.clear()

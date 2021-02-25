@@ -1,9 +1,11 @@
 # python -m pip install -U pygame --user
 # To check it works :
 # python -m pygame.examples.aliens
+# To execute
+# python babaiswin.py
 
 
-
+import numpy as np
 import pygame as pg
 from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
@@ -72,11 +74,13 @@ rock = pg.transform.scale(images.get_sprite(15*24,21*24,24,24),(90,90))
 
 def init():
     running = True
+    quitting = False
     while running:
         screen.fill(background_color)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False      
+                quitting = True
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     printRules(state)
@@ -104,7 +108,6 @@ def init():
             screen.fill(background_color)
             drawState(stateWin)
         pg.display.update()
-    quitting = False
     while not quitting:
         for event in pg.event.get():
             if event.type == pg.QUIT:
