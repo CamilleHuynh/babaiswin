@@ -8,14 +8,18 @@ def step(state,action):
     newState,reward,terminal = sh.step(bitsToStrings(state),action)
     return stringsToBits(newState),reward,terminal
 
+def stepbis(state,action):
+    newState,reward,terminal = step(stringsToBits(state),action)
+    return bitsToStrings(newState),reward,terminal
+
 def stringsToBits(state):
     nrow,ncol = len(state),len(state[0])
-    newState = np.full((nrow,ncol,9),False)
+    newState = np.zeros((nrow,ncol,9))
     for i in range(nrow):
         for j in range(ncol):
             for k in range(len(strings)):
                 if strings[k] in state[i][j]:
-                    newState[i][j][k] = True
+                    newState[i][j][k] = 1
     return newState
 
 def bitsToStrings(state):
@@ -26,6 +30,7 @@ def bitsToStrings(state):
         for j in range(ncol):
             newState[i].append([])
             for k in range(len(strings)):
-                if newState[i][j][k]:
-                    state[i][j].append(strings[k])
+                if state[i][j][k]:
+                    newState[i][j].append(strings[k])
+    return newState
                 

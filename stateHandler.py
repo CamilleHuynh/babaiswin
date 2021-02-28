@@ -113,7 +113,7 @@ def step(state,action):
     
     state = stateToUp(newState,(4-action)%4)
     simplify(state)
-    return    
+    return state,isWinState(state),isFinalState(state)
 
 def stateToUp(state,action):
     newState = []
