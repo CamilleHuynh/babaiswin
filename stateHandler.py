@@ -73,6 +73,7 @@ def isWin(list, win_list):
             return True
     return False
 
+# Return (observation=new_state, reward, done)
 def step(state,action):
     rule_list = []
     you_list = []
@@ -113,7 +114,9 @@ def step(state,action):
     
     state = stateToUp(newState,(4-action)%4)
     simplify(state)
-    return state,isWinState(state),isFinalState(state)
+    
+    reward = 1. if isWinState(state) else 0.
+    return state, reward, isFinalState(state)
 
 def stateToUp(state,action):
     newState = []
@@ -174,3 +177,24 @@ def isWinState(state):
                 
 def isFinalState(state):
     return isWinState(state) or isDeathState(state)
+
+def getActionList():
+    return [0,1,2,3]
+
+def getStateList(width = 5, height = 6):
+    dispatch = [["ft"],["wt"],["bt"],["is"],["yt"],["bo"],["ro"],["ro"],["is"],["wo"],["fo"]]
+    states = []
+    state=[]
+    for i in range(height):
+        state.append([])
+        for j in range(width):
+            state[i].append([])
+            
+    for elem in dispatch:
+        for i in range(width):
+            for j in range(height):
+                if state[i,j] != []:
+                    state[i,j]=elem
+    
+    states.append(str(state))
+    return states
