@@ -10,6 +10,7 @@ import pygame as pg
 from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
 from copy import deepcopy
+from state import stepbis
 
 
 
@@ -24,6 +25,8 @@ background_color = (225, 225, 225)
 #text    : bt = baba; ft = flag; is = is; wt = win; yt = you
 # Ce qui est est affiché à l'écran est 
 # la matrice map
+
+#Si changement, modifier aussi liste de états dans stateHandler (getStateList())
 map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
             [["ft"], ["no"], ["wt"], ["no"], ["no"]],
             [["bt"], ["is"], ["yt"], ["no"], ["no"]],
@@ -39,6 +42,8 @@ def reset():
             [["no"], ["is"], ["wo"], ["no"], ["no"]],
             [["no"], ["no"], ["no"], ["no"], ["fo"]]]
     return map
+
+
 
 state =[]
 for i in range(len(map[0])):
@@ -90,16 +95,16 @@ def init():
                 if event.key == pg.K_SPACE:
                     printRules(state)
                 elif event.key == pg.K_UP:
-                    step(state,0)
+                    stepbis(state,0)
                     states.append(deepcopy(state))
                 elif event.key == pg.K_RIGHT:
-                    step(state,1)
+                    stepbis(state,1)
                     states.append(deepcopy(state))
                 elif event.key == pg.K_DOWN:
-                    step(state,2)
+                    stepbis(state,2)
                     states.append(deepcopy(state))
                 elif event.key == pg.K_LEFT:
-                    step(state,3)
+                    stepbis(state,3)
                     states.append(deepcopy(state))
                 elif event.key == pg.K_r:
                     if(len(states)>1):
@@ -119,6 +124,7 @@ def init():
                 quitting = True
             elif event.type == pg.KEYDOWN:
                 quitting = True
+    pg.quit()
         
                 
 
