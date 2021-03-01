@@ -3,6 +3,7 @@ rValues = ["wt","yt"]
 stopList = ["wo"]
 pushList = ["ro","kt","bt","ft","is","wt","yt"]
 
+
 def updateRules(state,rule_list,you_list,win_list):
     nrow,ncol = len(state),len(state[0])
     rule_list.clear()
@@ -112,7 +113,10 @@ def step(state,action):
     
     state = stateToUp(newState,(4-action)%4)
     simplify(state)
-    return    
+    
+    reward = 1. if isWinState(state) else 0.
+    return state, reward, isFinalState(state)
+   
 
 def stateToUp(state,action):
     newState = []
