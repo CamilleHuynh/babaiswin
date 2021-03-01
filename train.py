@@ -1,15 +1,13 @@
 import numpy as np
-import pygame as pg
 from copy import deepcopy
 import matplotlib.pyplot as plt
 from PIL import Image
+from torch.random import initial_seed
 
 from stateHandler import step, printRules, simplify, isWinState
-from spritesheet import Spritesheet
-from state import stringsToBits
+from state import bitsToStrings, stringsToBits
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
-from babaiswin import reset
 
 import torch
 import torch.nn as nn
@@ -31,6 +29,12 @@ TARGET_UPDATE = 10
 height = 6
 width = 5
 n_actions = 4
+map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
+            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
+            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+            [["no"], ["is"], ["wo"], ["no"], ["no"]],
+            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
 
 target_net = DQN(height, width, n_actions).to(device)
 target_net.eval()
@@ -68,7 +72,7 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
     steps_done += 1
     if sample > EPSILON:
         Q = target_net(state)
-        return torch.tensor([[np.argmax(Q)]], device=device, dtype=torch.long)
+        return Q.max(1)[1]
     else:
         return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
 
@@ -118,12 +122,14 @@ num_episodes = 50
 for i_episode in range(num_episodes):
     print('episode', i_episode)
     # Initialize the environment and state
-    map = reset()
-    state = torch.from_numpy(stringsToBits(map))
+    initial_state = stringsToBits(map)
+    state = torch.unsqueeze(torch.tensor(initial_state, dtype = torch.float32), 0) #convert initial state to tensor of the right type
     for t in count():
         # Select and perform an action
         action = select_action(state)
-        next_state, reward, done = step(action.item())
+        state_str = bitsToStrings(torch.squeeze(state, 0))
+        next_state_str, reward, done = step(state_str, action.item())
+        next_state = torch.unsqueeze(torch.tensor(stringsToBits(next_state_str), dtype = torch.float32), 0) #convert next_state to the right form
         reward = torch.tensor([reward], device=device)
 
         # Store the transition in memory
@@ -136,7 +142,7 @@ for i_episode in range(num_episodes):
         optimize_model()
         if done:
             episode_durations.append(t + 1)
-            plot_durations()
+            #plot_durations()
             break
 
 print('Complete')
