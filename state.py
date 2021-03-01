@@ -1,6 +1,7 @@
 #python -m pip install numpy
 import numpy as np
 import stateHandler as sh
+import torch
 
 strings = ["bt","ft","wt","yt","is","ro","wo","bo","fo"]
 
@@ -18,7 +19,7 @@ def stepbis(state,action):
 
 def stringsToBits(state):
     nrow,ncol = len(state),len(state[0])
-    newState = np.zeros((nrow,ncol,9))
+    newState = torch.zeros((9,ncol,nrow))
     for i in range(nrow):
         for j in range(ncol):
             for k in range(len(strings)):

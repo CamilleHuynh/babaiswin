@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from torch.random import initial_seed
 
-from stateHandler import step, printRules, simplify, isWinState
-from state import bitsToStrings, stringsToBits
+from state import bitsToStrings, stringsToBits, step
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
 
@@ -122,14 +121,11 @@ num_episodes = 50
 for i_episode in range(num_episodes):
     print('episode', i_episode)
     # Initialize the environment and state
-    initial_state = stringsToBits(map)
-    state = torch.unsqueeze(torch.tensor(initial_state, dtype = torch.float32), 0) #convert initial state to tensor of the right type
+    state = stringsToBits(map)
     for t in count():
         # Select and perform an action
-        action = select_action(state)
-        state_str = bitsToStrings(torch.squeeze(state, 0))
-        next_state_str, reward, done = step(state_str, action.item())
-        next_state = torch.unsqueeze(torch.tensor(stringsToBits(next_state_str), dtype = torch.float32), 0) #convert next_state to the right form
+        action = select_action(torch.unsqueeze(state, 0))
+        next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
 
         # Store the transition in memory
