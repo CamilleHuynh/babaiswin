@@ -23,18 +23,20 @@ def stringsToBits(state):
         for j in range(ncol):
             for k in range(len(strings)):
                 if strings[k] in state[i][j]:
-                    newState[i][j][k] = 1
+                    newState[k][j][i] = 1
     return newState
 
 def bitsToStrings(state):
-    nrow,ncol,_ = state.shape
+    _,ncol,nrow = state.shape
     newState = []
     for i in range(nrow):
         newState.append([])
         for j in range(ncol):
             newState[i].append([])
             for k in range(len(strings)):
-                if state[i][j][k]:
+                if state[k][j][i]:
                     newState[i][j].append(strings[k])
+                else:
+                    newState[i][j].append("no")
     return newState
                 

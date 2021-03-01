@@ -28,11 +28,20 @@ background_color = (225, 225, 225)
 
 #Si changement, modifier aussi liste de états dans stateHandler (getStateList())
 map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
-         [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-         [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-         [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-         [["no"], ["is"], ["wo"], ["no"], ["no"]],
-         [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
+            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
+            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+            [["no"], ["is"], ["wo"], ["no"], ["no"]],
+            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+            
+def reset():
+    map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
+            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
+            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+            [["no"], ["is"], ["wo"], ["no"], ["no"]],
+            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+    return map
 
 
 

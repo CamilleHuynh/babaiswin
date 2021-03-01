@@ -117,6 +117,7 @@ def step(state,action):
     
     reward = 1. if isWinState(state) else 0.
     return state, reward, isFinalState(state)
+   
 
 def stateToUp(state,action):
     newState = []
