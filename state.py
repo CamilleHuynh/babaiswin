@@ -10,22 +10,25 @@ def step(state,action):
 
 def stringsToBits(state):
     nrow,ncol = len(state),len(state[0])
-    newState = np.full((nrow,ncol,9),False)
+    newState = np.full((9,ncol,nrow),0)
     for i in range(nrow):
         for j in range(ncol):
             for k in range(len(strings)):
                 if strings[k] in state[i][j]:
-                    newState[i][j][k] = True
+                    newState[k][j][i] = 1
     return newState
 
 def bitsToStrings(state):
-    nrow,ncol,_ = state.shape
+    _,ncol,nrow = state.shape
     newState = []
     for i in range(nrow):
         newState.append([])
         for j in range(ncol):
             newState[i].append([])
             for k in range(len(strings)):
-                if newState[i][j][k]:
-                    state[i][j].append(strings[k])
+                if state[k][j][i]:
+                    newState[i][j].append(strings[k])
+                else:
+                    newState[i][j].append("no")
+    return newState
                 
