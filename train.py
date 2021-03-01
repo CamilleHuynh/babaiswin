@@ -17,7 +17,7 @@ import torchvision.transforms as T
 import random
 from itertools import count
 
-#test
+print("test")
 
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
