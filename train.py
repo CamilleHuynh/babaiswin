@@ -20,7 +20,7 @@ from itertools import count
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 128
+BATCH_SIZE = 50
 GAMMA = 0.999
 EPSILON = 0.5
 TARGET_UPDATE = 10
@@ -28,7 +28,7 @@ TARGET_UPDATE = 10
 height = 6
 width = 5
 n_actions = 4
-map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+mapp =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
             [["ft"], ["no"], ["wt"], ["no"], ["no"]],
             [["bt"], ["is"], ["yt"], ["no"], ["no"]],
             [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
@@ -71,9 +71,9 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
     steps_done += 1
     if sample > EPSILON:
         Q = target_net(state)
-        return Q.max(1)[1]
+        return torch.unsqueeze(Q.max(1)[1],0)
     else:
-        return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
+        return torch.tensor([random.randrange(n_actions)], device=device, dtype=torch.long)
 
 def optimize_model():
     if len(memory) < BATCH_SIZE:
@@ -86,13 +86,23 @@ def optimize_model():
 
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
+    
+    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
     state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
+    
+    print(batch.action[0])
+    print(batch.action[1])
+    print(batch.action[0].shape)
+    print(batch.action[1].shape)
+    torch.cat((batch.action[0],batch.action[0]))
+    action_batch = torch.cat((batch.action[0],batch.action[1]))
+    #print("win")
+    #action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
+    
+    print(state_batch.shape)
 
     state_action_values = target_net(state_batch).gather(1, action_batch)
 
@@ -121,7 +131,7 @@ num_episodes = 50
 for i_episode in range(num_episodes):
     print('episode', i_episode)
     # Initialize the environment and state
-    state = stringsToBits(map)
+    state = stringsToBits(mapp)
     for t in count():
         # Select and perform an action
         action = select_action(torch.unsqueeze(state, 0))
@@ -138,7 +148,7 @@ for i_episode in range(num_episodes):
         optimize_model()
         if done:
             episode_durations.append(t + 1)
-            #plot_durations()
+            plot_durations()
             break
 
 print('Complete')
