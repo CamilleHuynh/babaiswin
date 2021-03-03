@@ -115,7 +115,12 @@ def step(state,action):
     state = stateToUp(newState,(4-action)%4)
     simplify(state)
     
-    reward = 1. if isWinState(state) else 0.
+    if isWinState(state):
+        reward = 1
+    elif isDeathState(state):
+        reward = -1
+    elif isFinalState(state)==False:
+        reward = 0
     return state, reward, isFinalState(state)
    
 
