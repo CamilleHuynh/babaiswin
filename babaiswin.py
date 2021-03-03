@@ -7,10 +7,9 @@
 
 import numpy as np
 import pygame as pg
-from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
 from copy import deepcopy
-from state import stepbis
+from state import stepbis, printRulesFromString,isWinStringState
 
 
 
@@ -51,7 +50,6 @@ for i in range(len(map[0])):
     for j in range(len(map)):
         state[i].append(map[j][i])
 
-simplify(state)
 states = [deepcopy(state)]
 
 nrow = len(state)
@@ -93,7 +91,7 @@ def init():
                 quitting = True
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
-                    printRules(state)
+                    printRulesFromString(state)
                 elif event.key == pg.K_UP:
                     stepbis(state,0)
                     states.append(deepcopy(state))
@@ -111,7 +109,7 @@ def init():
                         del states[-1]
                         state[::] = deepcopy(states[-1])
         drawState(state)
-        if isWinState(state):
+        if isWinStringState(state):
             print("Win !")
             running = False
             stateWin=[[["yt"]],[["wt"]]]
