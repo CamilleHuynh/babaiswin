@@ -30,7 +30,7 @@ TARGET_UPDATE = 10
 height = 6
 width = 5
 n_actions = 4
-map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+grille =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
             [["ft"], ["no"], ["wt"], ["no"], ["no"]],
             [["bt"], ["is"], ["yt"], ["no"], ["no"]],
             [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
@@ -77,7 +77,7 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
     steps_done += 1
     if sample > EPSILON:
         Q = target_net(state)
-        return Q.max(1)[1] #index of action with best reward for each row
+        return torch.unsqueeze(Q.max(1)[1], 0) #index of action with best reward for each row
     else:
         return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
 
@@ -125,7 +125,7 @@ num_episodes = 50
 for i_episode in range(num_episodes):
     print('episode', i_episode)
     # Initialize the environment and state
-    state = stringsToBits(map)
+    state = stringsToBits(grille)
     for t in count():
         # Select and perform an action
         action = select_action(torch.unsqueeze(state, 0))
