@@ -17,8 +17,6 @@ import torchvision.transforms as T
 import random
 from itertools import count
 
-print("test")
-
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -36,6 +34,10 @@ map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
             [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
             [["no"], ["is"], ["wo"], ["no"], ["no"]],
             [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+#numéros des actions
+#       0
+#      3  1
+#       2
 
 target_net = DQN(height, width, n_actions).to(device)
 target_net.eval()
@@ -73,7 +75,7 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
     steps_done += 1
     if sample > EPSILON:
         Q = target_net(state)
-        return Q.max(1)[1]
+        return Q.max(1)[1] #index of action with best reward for each row
     else:
         return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
 
@@ -88,10 +90,8 @@ def optimize_model():
 
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.cat([s for s in batch.next_state
-                                                if s is not None])
+    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
+    non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
     state_batch = torch.cat(batch.state)
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
