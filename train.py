@@ -14,8 +14,6 @@ import torch.optim as optim
 import random
 from itertools import count
 
-#test
-
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -24,7 +22,7 @@ GAMMA = 0.999
 EPSILON = 0.5
 TARGET_UPDATE = 10
 
-num_episodes = 50
+num_episodes = 200
 
 height = 6
 width = 5
@@ -83,39 +81,39 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
 def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
-    transitions = memory.sample(BATCH_SIZE)
+    transitions = memory.sample(BATCH_SIZE) #sample a batch of transitions
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
     # to Transition of batch-arrays.
     batch = Transition(*zip(*transitions))
 
-    # Compute a mask of non-final states and concatenate the batch elements
-    # (a final state would've been the one after which simulation ended)
-    non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state if s is not None])
-    state_batch = torch.cat([s.unsqueeze(0) for s in batch.next_state if s is not None])
+    # Concatenate the batch elements
+    state_batch = torch.cat([s.unsqueeze(0) for s in batch.state])
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
 
-    state_action_values = target_net(state_batch).gather(1, action_batch)
+    #predicted value for state and chosen action
+    state_action_values = torch.cat([target_net(state_batch)[action_batch[i].item()]
+                                        for i in range(state_batch.shape[0]) ]) 
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
     # on the "older" target_net; selecting their best reward with max(1)[0].
-    # This is merged based on the mask, such that we'll have either the expected
-    # state value or 0 in case the state was final.
-    next_state_values = torch.zeros(BATCH_SIZE, device=device)
-    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
+    #if the state was final, V(s_{t+1}) is set to zero
+    next_state_values = torch.cat([target_net(s.unsqueeze(0)).max(1).values if s is not None
+                                        else torch.tensor([0])
+                                            for s in batch.next_state])
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
     loss = nn.MSELoss()
-    outputs = loss(expected_state_action_values.unsqueeze(1), state_action_values)
+    output = loss(expected_state_action_values.unsqueeze(1), state_action_values)
+    print("Optimize the model - Loss : ", output.item())
 
     # Optimize the model
     optimizer.zero_grad()
-    outputs.backward()
+    output.backward()
     for param in target_net.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
