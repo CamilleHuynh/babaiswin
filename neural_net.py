@@ -1,14 +1,5 @@
-import numpy as np
-from stateHandler import step, printRules, simplify, isWinState
-from copy import deepcopy
-import state
-
-import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-import torchvision.transforms as T
-import random
 
 
 class DQN(nn.Module):

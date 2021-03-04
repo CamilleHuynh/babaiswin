@@ -1,18 +1,15 @@
 import numpy as np
-from copy import deepcopy
 import matplotlib.pyplot as plt
 from PIL import Image
 from torch.random import initial_seed
 
-from state import bitsToStrings, stringsToBits, step
+from state import stringsToBits, step
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
-import torchvision.transforms as T
 
 import random
 from itertools import count
@@ -26,6 +23,8 @@ BATCH_SIZE = 128
 GAMMA = 0.999
 EPSILON = 0.5
 TARGET_UPDATE = 10
+
+num_episodes = 50
 
 height = 6
 width = 5
@@ -93,8 +92,8 @@ def optimize_model():
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch.next_state)), device=device, dtype=torch.bool)
-    non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
-    state_batch = torch.cat(batch.state)
+    non_final_next_states = torch.cat([s.unsqueeze(0) for s in batch.next_state if s is not None])
+    state_batch = torch.cat([s.unsqueeze(0) for s in batch.next_state if s is not None])
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
 
@@ -111,17 +110,16 @@ def optimize_model():
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
-    loss = nn.MSELoss(expected_state_action_values.unsqueeze(1), state_action_values)
+    loss = nn.MSELoss()
+    outputs = loss(expected_state_action_values.unsqueeze(1), state_action_values)
 
     # Optimize the model
     optimizer.zero_grad()
-    loss.backward()
+    outputs.backward()
     for param in target_net.parameters():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-
-num_episodes = 50
 for i_episode in range(num_episodes):
     print('episode', i_episode)
     # Initialize the environment and state
@@ -146,4 +144,9 @@ for i_episode in range(num_episodes):
             break
 
 print('Complete')
+
+#Save the model after train
+torch.save(target_net.state_dict(), 'model.pth')
+print("Saved model to disk")
+
 plt.show()
