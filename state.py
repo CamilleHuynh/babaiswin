@@ -12,12 +12,19 @@ def step(state,action):
     stepUp(upstate,babaisyou,flagisyou)
     newState = torch.rot90(upstate,-action,[1,2])
     if isWinState(state,babaiswin,babaisyou,flagiswin,flagisyou):
-        reward = 1
+        reward = 10
+        isFinal = True
+        newState = None
     elif isDeathState(state,babaisyou,flagisyou):
+        reward = -10
+        isFinal = True
+        newState = None
+    elif torch.equal(newState, state): #negative reward for unnecessary action
         reward = -1
+        isFinal = False
     else :
         reward = 0
-    isFinal = (reward!=0)
+        isFinal = False
     return newState, reward, isFinal
 
 #This function is not meant to be used for the learning, it is only here for tests and to run the game
