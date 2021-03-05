@@ -22,7 +22,7 @@ GAMMA = 0.999
 EPSILON = 0.5
 TARGET_UPDATE = 10
 
-num_episodes = 200
+num_episodes = 50
 
 height = 6
 width = 5
@@ -38,7 +38,9 @@ grille =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
 #      3  1
 #       2
 
+policy_net = DQN(height, width, n_actions).to(device)
 target_net = DQN(height, width, n_actions).to(device)
+target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
 optimizer = optim.RMSprop(target_net.parameters())
@@ -93,7 +95,7 @@ def optimize_model():
     reward_batch = torch.cat(batch.reward)
 
     #predicted value for state and chosen action
-    state_action_values = torch.cat([target_net(state_batch)[action_batch[i].item()]
+    state_action_values = torch.tensor([ policy_net(state_batch[i].unsqueeze(0)) [0] [action_batch[i].item()]
                                         for i in range(state_batch.shape[0]) ]) 
 
     # Compute V(s_{t+1}) for all next states.
@@ -108,7 +110,7 @@ def optimize_model():
 
     # Compute Huber loss
     loss = nn.MSELoss()
-    output = loss(expected_state_action_values.unsqueeze(1), state_action_values)
+    output = loss(expected_state_action_values.unsqueeze(1), state_action_values.unsqueeze(1))
     print("Optimize the model - Loss : ", output.item())
 
     # Optimize the model
@@ -140,6 +142,10 @@ for i_episode in range(num_episodes):
             episode_durations.append(t + 1)
             #plot_durations()
             break
+        
+    # Update the target network, copying all weights and biases in DQN
+    if i_episode % TARGET_UPDATE == 0:
+        target_net.load_state_dict(policy_net.state_dict())
 
 print('Complete')
 
