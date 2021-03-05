@@ -9,9 +9,10 @@ import numpy as np
 import pygame as pg
 from spritesheet import Spritesheet
 from copy import deepcopy
-from state import stepbis, printRulesFromString,isWinStringState, stringsToBits
+from state import rewards, stepbis, printRulesFromString,isWinStringState, stringsToBits
 from neural_net import DQN
 import torch
+from parameters import env
 
 
 
@@ -20,34 +21,21 @@ import torch
 pg.mixer.pre_init(44100, -16, 2, 1024)
 pg.init()
 
-background_color = (225, 225, 225)
-
 #objects : no = vide; wo = wall; bo = baba; fo = flag;
 #text    : bt = baba; ft = flag; is = is; wt = win; yt = you
 # Ce qui est est affiché à l'écran est 
 # la matrice grille
 
-#Si changement, modifier aussi liste de états dans stateHandler (getStateList())
-height = 6
-width = 5
-n_actions = 4
-grille =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
-            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-            [["no"], ["is"], ["wo"], ["no"], ["no"]],
-            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
-
 #load the model
-model = DQN(height, width, n_actions)
+model = DQN(env.height, env.width, env.n_actions)
 model.load_state_dict(torch.load('model.pth'))
 model.eval()
 
 state =[]
-for i in range(len(grille[0])):
+for i in range(len(env.grille[0])):
     state.append([])
-    for j in range(len(grille)):
-        state[i].append(grille[j][i])
+    for j in range(len(env.grille)):
+        state[i].append(env.grille[j][i])
 
 states = [deepcopy(state)]
 
@@ -83,7 +71,7 @@ def init():
     running = True
     quitting = False
     while running:
-        screen.fill(background_color)
+        screen.fill(env.background_color)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False      
@@ -105,7 +93,7 @@ def init():
             print("Win !")
             running = False
             stateWin=[[["yt"]],[["wt"]]]
-            screen.fill(background_color)
+            screen.fill(env.background_color)
             drawState(stateWin)
         pg.display.update()
     while not quitting:

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from torch.random import initial_seed
+import math
 
 from state import stringsToBits, step
 from neural_net import DQN
@@ -10,47 +11,27 @@ from replay_buffer import ReplayMemory, Transition
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 
 import random
 from itertools import count
 
+from parameters import rewards, learning_param, env
+
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 128
-GAMMA = 0.999
-EPSILON = 0.5
-TARGET_UPDATE = 10
-
-num_episodes = 50
-
-height = 6
-width = 5
-n_actions = 4
-grille =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
-            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-            [["no"], ["is"], ["wo"], ["no"], ["no"]],
-            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
-#numéros des actions
-#       0
-#      3  1
-#       2
-
-policy_net = DQN(height, width, n_actions).to(device)
-target_net = DQN(height, width, n_actions).to(device)
+policy_net = DQN(env.height, env.width, env.n_actions).to(device)
+target_net = DQN(env.height, env.width, env.n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
-optimizer = optim.RMSprop(target_net.parameters())
+optimizer = optim.RMSprop(policy_net.parameters())
 memory = ReplayMemory(10000)
-
-
-steps_done = 0
 
 episode_durations = []
 
+steps_done = 0
 
 def plot_durations():
     plt.figure(2)
@@ -73,17 +54,23 @@ def plot_durations():
 def select_action(state): #Select random a_t with probability epsilon, else a_t*
     global steps_done
     sample = random.random()
+    eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END) * \
+        math.exp(-1. * steps_done / learning_param.EPS_DECAY)
     steps_done += 1
-    if sample > EPSILON:
-        Q = target_net(state)
-        return torch.unsqueeze(Q.max(1)[1], 0) #index of action with best reward for each row
+    if sample > eps:
+        Q = policy_net(state)
+        action = torch.unsqueeze(Q.max(1)[1], 0)
+        print("Select action ", action.item())
+        return action #index of action with best reward for each row
     else:
-        return torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long)
+        action = torch.tensor([[random.randrange(env.n_actions)]], device=device, dtype=torch.long)
+        print("Select random action ", action.item())
+        return action
 
 def optimize_model():
-    if len(memory) < BATCH_SIZE:
+    if len(memory) < learning_param.BATCH_SIZE:
         return
-    transitions = memory.sample(BATCH_SIZE) #sample a batch of transitions
+    transitions = memory.sample(learning_param.BATCH_SIZE) #sample a batch of transitions
     # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
     # detailed explanation). This converts batch-array of Transitions
     # to Transition of batch-arrays.
@@ -95,37 +82,35 @@ def optimize_model():
     reward_batch = torch.cat(batch.reward)
 
     #predicted value for state and chosen action
-    state_action_values = torch.tensor([ policy_net(state_batch[i].unsqueeze(0)) [0] [action_batch[i].item()]
-                                        for i in range(state_batch.shape[0]) ]) 
+    predicted_values = torch.cat([policy_net(s.unsqueeze(0)) for s in state_batch]) 
+    state_action_values = torch.tensor([ predicted_values[i][action_batch[i]] for i in range(predicted_values.shape[0]) ]) 
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
     # on the "older" target_net; selecting their best reward with max(1)[0].
     #if the state was final, V(s_{t+1}) is set to zero
-    next_state_values = torch.cat([target_net(s.unsqueeze(0)).max(1).values if s is not None
-                                        else torch.tensor([0])
-                                            for s in batch.next_state])
+    next_state_values = torch.cat([target_net(s.unsqueeze(0)).max(1).values for s in batch.next_state])
     # Compute the expected Q values
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    expected_state_action_values = (next_state_values * learning_param.GAMMA) + reward_batch
 
     # Compute Huber loss
-    loss = nn.MSELoss()
-    output = loss(expected_state_action_values.unsqueeze(1), state_action_values.unsqueeze(1))
-    print("Optimize the model - Loss : ", output.item())
+    loss = F.smooth_l1_loss(state_action_values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
+    print("                                  Loss : ", loss.item())
 
     # Optimize the model
     optimizer.zero_grad()
-    output.backward()
-    for param in target_net.parameters():
-        param.grad.data.clamp_(-1, 1)
+    loss.backward()
+    for param in policy_net.parameters():
+        param.data.clamp_(-1, 1)
     optimizer.step()
 
-for i_episode in range(num_episodes):
-    print('episode', i_episode)
-    # Initialize the environment and state
-    state = stringsToBits(grille)
+for i_episode in range(learning_param.num_episodes):
+    print('Episode', i_episode, '=========================================================================================================')
+    # Initialize the env and state
+    state = stringsToBits(env.grille)
+    n_step = 0
     for t in count():
-        # Select and perform an action
+        # Select and perform an action 
         action = select_action(torch.unsqueeze(state, 0))
         next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
@@ -135,6 +120,9 @@ for i_episode in range(num_episodes):
 
         # Move to the next state
         state = next_state
+        n_step+=1
+
+        print(('Episode [{}/{}] - Etape {}').format(i_episode, learning_param.num_episodes, n_step))
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
@@ -144,7 +132,7 @@ for i_episode in range(num_episodes):
             break
         
     # Update the target network, copying all weights and biases in DQN
-    if i_episode % TARGET_UPDATE == 0:
+    if i_episode % learning_param.TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
 print('Complete')
