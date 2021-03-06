@@ -1,6 +1,7 @@
 #python -m pip install numpy
 import numpy as np
 import torch
+from parameters import rewards
 
 #Fonctions pouvant être utilisées pour l'apprentissage : step
 
@@ -11,19 +12,17 @@ def step(state,action):
     upstate = torch.rot90(state,action,[1,2])
     stepUp(upstate,babaisyou,flagisyou)
     newState = torch.rot90(upstate,-action,[1,2])
-    if isWinState(state,babaiswin,babaisyou,flagiswin,flagisyou):
-        reward = 10
+    if isWinState(newState,babaiswin,babaisyou,flagiswin,flagisyou):
+        reward = rewards.win
         isFinal = True
-        newState = None
-    elif isDeathState(state,babaisyou,flagisyou):
-        reward = -10
+    elif isDeathState(newState,babaisyou,flagisyou):
+        reward = rewards.death
         isFinal = True
-        newState = None
     elif torch.equal(newState, state): #negative reward for unnecessary action
-        reward = -1
+        reward = rewards.unnecessary
         isFinal = False
     else :
-        reward = 0
+        reward = rewards.default
         isFinal = False
     return newState, reward, isFinal
 
