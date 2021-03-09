@@ -1,0 +1,71 @@
+Installation :
+
+Some library may need to be installed :
+In particular, to install the pygame library :
+$ python -m pip install -U pygame --user
+Other libraries such as "torch" or "matplotlib" can be installed the same way
+
+
+
+
+
+
+Testing the environment :
+
+$ python babaiswin.py
+Controls : Arrow keys, R to go back one step, spacebar to print the current rules
+
+
+Training an agent with the parameters given in parameters.py:
+
+$ python train.py
+This generate the file model.pth
+
+Once the training is completed, it is possible to look at the first result with autonomous_baba.py :
+
+$ python autonomous_baba.py
+Then, press the P key to move one step in the environment, using the result of the training to choose the best possible action.
+
+
+
+
+
+
+
+File by file description:
+
+state.py :
+File that handle the states and the transition between the states. It contains the "step" function of the environment
+
+babaiswin.py :
+Execute with 
+$ python babaiswin.py
+Controls : Arrow keys, R to go back one step, spacebar to print the current rules
+Small interactive display, using PyGame, to be able to play the levels 
+
+spritesheet.py :
+Support functions for the sprites displayed in babaiswin.py
+
+spritesheet.png :
+Contains all the sprites from the original game.
+File downloaded from https://www.spriters-resource.com/pc_computer/babaisyou/sheet/115231/
+
+parameters.py :
+Contains all the parameters of the learning.
+
+train.py :
+Execute with
+$ python train.py
+Runs the training with the given parameters. Generate the output file model.pth
+
+neural_net.py :
+Contains the parameters and the definition of the neural network we use.
+
+replay_buffer.py :
+Support functions used in train.py
+
+autonomous_baba.py :
+Execute with
+$ python autonomous_baba.py
+Controls : press P to move one step in the environment
+Simulates an agent using the the results from the file model.pth
