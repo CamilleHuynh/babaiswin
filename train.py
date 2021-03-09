@@ -114,6 +114,11 @@ for i_episode in range(learning_param.num_episodes):
         action = select_action(torch.unsqueeze(state, 0))
         next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
+        
+        if n_step > learning_param.MAX_ITERATIONS :
+            reward = rewards.death
+            reward = torch.tensor([reward], device=device)
+            done = True
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)
@@ -126,6 +131,7 @@ for i_episode in range(learning_param.num_episodes):
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
+        
         if done:
             episode_durations.append(t + 1)
             #plot_durations()
