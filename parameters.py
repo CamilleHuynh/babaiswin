@@ -10,10 +10,11 @@ class env:
                 [["no"], ["no"], ["ro"], ["ro"], ["no"]],
                 [["no"], ["is"], ["wo"], ["no"], ["no"]],
                 [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+    
     #numéros des actions
-    #       0
-    #      3  1
-    #       2
+    #       3
+    #      0  2
+    #       1
 
 
 #learning parameters
@@ -24,6 +25,7 @@ class learning_param:
     EPS_START = 0.9
     EPS_DECAY = 200
     TARGET_UPDATE = 10
+    MAX_ITERATIONS = 100
     num_episodes = 10
 
 class rewards:

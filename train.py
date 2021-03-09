@@ -30,8 +30,9 @@ optimizer = optim.RMSprop(policy_net.parameters())
 memory = ReplayMemory(10000)
 
 episode_durations = []
-
+print_freq = 5
 steps_done = 0
+n_step=0
 
 def plot_durations():
     plt.figure(2)
@@ -53,6 +54,7 @@ def plot_durations():
 
 def select_action(state): #Select random a_t with probability epsilon, else a_t*
     global steps_done
+    global n_step
     sample = random.random()
     eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END) * \
         math.exp(-1. * steps_done / learning_param.EPS_DECAY)
@@ -60,14 +62,15 @@ def select_action(state): #Select random a_t with probability epsilon, else a_t*
     if sample > eps:
         Q = policy_net(state)
         action = torch.unsqueeze(Q.max(1)[1], 0)
-        print("Select action ", action.item())
+        if n_step%print_freq==0:print("Select action ", action.item())
         return action #index of action with best reward for each row
     else:
         action = torch.tensor([[random.randrange(env.n_actions)]], device=device, dtype=torch.long)
-        print("Select random action ", action.item())
+        if n_step%print_freq==0:print("Select random action ", action.item())
         return action
 
 def optimize_model():
+    global n_step
     if len(memory) < learning_param.BATCH_SIZE:
         return
     transitions = memory.sample(learning_param.BATCH_SIZE) #sample a batch of transitions
@@ -95,7 +98,7 @@ def optimize_model():
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
-    print("                                  Loss : ", loss.item())
+    if n_step%print_freq==0:print("                                  Loss : ", loss.item())
 
     # Optimize the model
     optimizer.zero_grad()
@@ -114,6 +117,11 @@ for i_episode in range(learning_param.num_episodes):
         action = select_action(torch.unsqueeze(state, 0))
         next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
+        
+        if n_step > learning_param.MAX_ITERATIONS :
+            reward = rewards.death
+            reward = torch.tensor([reward], device=device)
+            done = True
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)
@@ -122,10 +130,11 @@ for i_episode in range(learning_param.num_episodes):
         state = next_state
         n_step+=1
 
-        print(('Episode [{}/{}] - Etape {}').format(i_episode, learning_param.num_episodes, n_step))
+        if n_step%print_freq==0:print(('Episode [{}/{}] - Etape {}').format(i_episode, learning_param.num_episodes, n_step))
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
+        
         if done:
             episode_durations.append(t + 1)
             #plot_durations()
