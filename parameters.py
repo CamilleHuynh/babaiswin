@@ -12,9 +12,9 @@ class env:
                 [["no"], ["no"], ["no"], ["no"], ["fo"]]]
     
     #numéros des actions
-    #       3
-    #      0  2
-    #       1
+    #       0
+    #      3  1
+    #       2
 
 
 #learning parameters
