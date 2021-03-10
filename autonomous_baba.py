@@ -27,15 +27,11 @@ pg.init()
 # la matrice grille
 
 #load the model
-model = DQN(env.height, env.width, env.n_actions)
+model = DQN(env.width, env.height, env.n_actions)
 model.load_state_dict(torch.load('model.pth'))
 model.eval()
 
-state =[]
-for i in range(len(env.grille[0])):
-    state.append([])
-    for j in range(len(env.grille)):
-        state[i].append(env.grille[j][i])
+state = env.grille
 
 states = [deepcopy(state)]
 
@@ -43,7 +39,7 @@ nrow = len(state)
 ncol = len(state[0])
 
 # Create the window
-screen = pg.display.set_mode((nrow*90, ncol*90))
+screen = pg.display.set_mode((ncol*90, nrow*90))
 pg.display.set_caption('')
 
 # Import images
@@ -62,9 +58,6 @@ wall = pg.transform.scale(images.get_sprite(0*24,57*24,24,24),(90,90))
 keke = pg.transform.scale(images.get_sprite(2*24,3*24,24,24),(90,90))
 keke_text = pg.transform.scale(images.get_sprite(20*24,30*24,24,24),(90,90))
 rock = pg.transform.scale(images.get_sprite(15*24,21*24,24,24),(90,90))
-
-
-
 
 
 def init():
@@ -92,7 +85,7 @@ def init():
         if isWinStringState(state):
             print("Win !")
             running = False
-            stateWin=[[["yt"]],[["wt"]]]
+            stateWin=[[["yt"],["wt"]]]
             screen.fill(env.background_color)
             drawState(stateWin)
         pg.display.update()
@@ -112,7 +105,7 @@ def drawState(state):
     nrow,ncol = len(state),len(state[0])
     for row in range(nrow):
         for col in range(ncol):
-            pos = (row * 90, col * 90)
+            pos = (col * 90, row * 90)
             if "wo" in state[row][col]:
                 screen.blit(wall, pos)
             elif "bo" in state[row][col]:

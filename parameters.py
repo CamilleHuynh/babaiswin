@@ -4,10 +4,10 @@ class env:
     height = 6
     width = 5
     n_actions = 4
-    grille =   [[["no"], ["no"], ["no"], ["no"], ["bo"]],
+    grille =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
                 [["ft"], ["no"], ["wt"], ["no"], ["no"]],
                 [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-                [["no"], ["no"], ["ro"], ["ro"], ["no"]],
+                [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
                 [["no"], ["is"], ["wo"], ["no"], ["no"]],
                 [["no"], ["no"], ["no"], ["no"], ["fo"]]]
     

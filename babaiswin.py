@@ -26,29 +26,13 @@ background_color = (225, 225, 225)
 # la matrice map
 
 #Si changement, modifier aussi liste de états dans stateHandler (getStateList())
-map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
+state =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
             [["ft"], ["no"], ["wt"], ["no"], ["no"]],
             [["bt"], ["is"], ["yt"], ["no"], ["no"]],
             [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
             [["no"], ["is"], ["wo"], ["no"], ["no"]],
             [["no"], ["no"], ["no"], ["no"], ["fo"]]]
-            
-def reset():
-    map =   [[["no"], ["no"], ["no"], ["no"], ["no"]],
-            [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-            [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-            [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-            [["no"], ["is"], ["wo"], ["no"], ["no"]],
-            [["no"], ["no"], ["no"], ["no"], ["fo"]]]
-    return map
 
-
-
-state =[]
-for i in range(len(map[0])):
-    state.append([])
-    for j in range(len(map)):
-        state[i].append(map[j][i])
 
 states = [deepcopy(state)]
 
@@ -56,7 +40,7 @@ nrow = len(state)
 ncol = len(state[0])
 
 # Create the window
-screen = pg.display.set_mode((nrow*90, ncol*90))
+screen = pg.display.set_mode((ncol*90, nrow*90))
 pg.display.set_caption('')
 
 # Import images
@@ -112,7 +96,7 @@ def init():
         if isWinStringState(state):
             print("Win !")
             running = False
-            stateWin=[[["yt"]],[["wt"]]]
+            stateWin=[[["yt"],["wt"]]]
             screen.fill(background_color)
             drawState(stateWin)
         pg.display.update()
@@ -132,7 +116,7 @@ def drawState(state):
     nrow,ncol = len(state),len(state[0])
     for row in range(nrow):
         for col in range(ncol):
-            pos = (row * 90, col * 90)
+            pos = (col * 90, row * 90)
             if "wo" in state[row][col]:
                 screen.blit(wall, pos)
             elif "bo" in state[row][col]:

@@ -34,23 +34,23 @@ def stepbis(state,action):
 
 def stringsToBits(state):
     nrow,ncol = len(state),len(state[0])
-    newState = torch.zeros((9,ncol,nrow))
+    newState = torch.zeros((9,nrow,ncol))
     for i in range(nrow):
         for j in range(ncol):
             for k in range(len(strings)):
                 if strings[k] in state[i][j]:
-                    newState[k][j][i] = 1
+                    newState[k][i][j] = 1
     return newState
 
 def bitsToStrings(state):
-    _,ncol,nrow = state.shape
+    _,nrow, ncol = state.shape
     newState = []
     for i in range(nrow):
         newState.append([])
         for j in range(ncol):
             newState[i].append([])
             for k in range(len(strings)):
-                if state[k][j][i]:
+                if state[k][i][j]:
                     newState[i][j].append(strings[k])
     return newState
 
@@ -59,9 +59,9 @@ def getRules(state):
     babaiswin = False
     flagisyou = False
     flagiswin = False
-    _,ncol,nrow = state.shape
-    for i in range(1,ncol-1):
-        for j in range(1,nrow-1):
+    _,nrow,ncol = state.shape
+    for i in range(1,nrow-1):
+        for j in range(1,ncol-1):
             if state[4][i][j]: #state[4] is the "if" matrix
                 if not babaiswin:
                     if (state[0][i-1][j] and state[2][i+1][j]) or (state[0][i][j-1] and state[2][i][j+1]):
@@ -75,8 +75,8 @@ def getRules(state):
                 if not flagisyou:
                     if (state[1][i-1][j] and state[3][i+1][j]) or (state[1][i][j-1] and state[3][i][j+1]):
                         flagisyou = True
-    for i in range(1,ncol-1):
-        for j in [0,nrow-1]:
+    for i in range(1,nrow-1):
+        for j in [0,ncol-1]:
             if state[4][i][j]: #state[4] is the "if" matrix
                 if not babaiswin:
                     if (state[0][i-1][j] and state[2][i+1][j]):

@@ -1,7 +1,6 @@
 from typing import Collection
 import numpy as np
 import pygame as pg
-from stateHandler import step, printRules, simplify, isWinState
 from spritesheet import Spritesheet
 from copy import deepcopy
 import state

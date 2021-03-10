@@ -7,6 +7,7 @@ import math
 from state import stringsToBits, step
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
+from parameters import rewards, learning_param, env
 
 import torch
 import torch.nn as nn
@@ -16,13 +17,11 @@ import torch.nn.functional as F
 import random
 from itertools import count
 
-from parameters import rewards, learning_param, env
-
 # if gpu is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-policy_net = DQN(env.height, env.width, env.n_actions).to(device)
-target_net = DQN(env.height, env.width, env.n_actions).to(device)
+policy_net = DQN(env.width, env.height, env.n_actions).to(device)
+target_net = DQN(env.width, env.height, env.n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
