@@ -85,7 +85,8 @@ def optimize_model():
 
     #predicted value for state and chosen action
     predicted_values = torch.cat([policy_net(s.unsqueeze(0)) for s in state_batch]) 
-    state_action_values = torch.tensor([ predicted_values[i][action_batch[i]] for i in range(predicted_values.shape[0]) ]) 
+    state_action_values = torch.tensor([ predicted_values[i][action_batch[i]] 
+                                        for i in range(predicted_values.shape[0]) ]) 
 
     # Compute V(s_{t+1}) for all next states.
     # Expected values of actions for non_final_next_states are computed based
@@ -131,7 +132,7 @@ for i_episode in range(learning_param.num_episodes):
 
         if n_step%print_freq==0:print(('Episode [{}/{}] - Etape {}').format(i_episode, learning_param.num_episodes, n_step))
 
-        # Perform one step of the optimization (on the target network)
+        # Perform one step of the optimization (on the policy network)
         optimize_model()
         
         if done:
