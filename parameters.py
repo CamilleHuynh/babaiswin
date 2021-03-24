@@ -24,15 +24,15 @@ class learning_param:
     EPS_END = 0.2
     EPS_START = 0.9
     EPS_DECAY = 50
-    TARGET_UPDATE = 5
+    TARGET_UPDATE = 10
     MAX_ITERATIONS = 100
-    num_episodes = 15
+    num_episodes = 50
     learning_rate = 0.1
 
 
 class rewards:
     win = 100
-    death = -10
+    death = -100
     #something is win
     canWin = 10
     default = -0.01

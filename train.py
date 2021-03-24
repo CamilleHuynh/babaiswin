@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 
 from state import stringsToBits, step, isWinStringState, isDeathStringState, bitsToStrings, best_possible_action
 from neural_net import DQN
@@ -25,20 +26,25 @@ optimizer = optim.RMSprop(policy_net.parameters(), lr=learning_param.learning_ra
 memory = ReplayMemory(10000)
 
 episode_durations = []
-print_freq = 1
+print_freq = 100
 steps_done = 0
 n_step = 0
 
+moy_losses = []
+moy_q_values = []
+steps = []
+
 
 # Select random a_t with probability epsilon, else a_t*
-def select_action(state):
+def select_action(state, q_values):
     global steps_done
     global n_step
     sample = random.random()
     eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END)* math.exp(-steps_done / learning_param.EPS_DECAY)
     steps_done += 1
-    if sample > eps:
+    if sample > learning_param.EPS_END:
         Q = policy_net(state)
+        q_values.append(max(Q.cpu().detach().numpy()[0]))
         action = best_possible_action(state.squeeze(0), Q)
         if n_step%print_freq==0:
             print("Select action ", action)
@@ -54,7 +60,7 @@ def select_action(state):
 
 
 
-def optimize_model():
+def optimize_model(losses):
     global n_step
     if len(memory) < learning_param.BATCH_SIZE:
         return
@@ -70,7 +76,7 @@ def optimize_model():
     action_batch = torch.cat(batch.action)
     reward_batch = torch.cat(batch.reward)
     
-    print(state_batch.shape)
+    #print(state_batch.shape)
 
     # predicted value for state and chosen action
     predicted_values = torch.cat([policy_net(s.unsqueeze(0)) for s in state_batch])
@@ -92,6 +98,7 @@ def optimize_model():
     loss = F.smooth_l1_loss(state_action_values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
     if n_step % print_freq == 0:
         print("                                  Loss : ", loss.item())
+    losses.append(loss.item())
 
     # Optimize the model
     optimizer.zero_grad()
@@ -107,9 +114,13 @@ for i_episode in range(learning_param.num_episodes):
     state = stringsToBits(env.grille)
     #print(state[7])
     n_step = 0
+    
+    losses = []
+    q_values = []
+    
     for t in count():
         # Select and perform an action
-        action = select_action(torch.unsqueeze(state, 0))
+        action = select_action(torch.unsqueeze(state, 0), q_values)
         next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
         #print(next_state[7])
@@ -130,7 +141,7 @@ for i_episode in range(learning_param.num_episodes):
             print(('Episode [{}/{}] - Etape {}').format(i_episode + 1, learning_param.num_episodes, n_step))
 
         # Perform one step of the optimization (on the policy network)
-        optimize_model()
+        optimize_model(losses)
 
         if done:
             if (isWinStringState(bitsToStrings(next_state))):
@@ -138,7 +149,11 @@ for i_episode in range(learning_param.num_episodes):
             if (isDeathStringState(bitsToStrings(next_state))):
                 print("DEATH !")
             episode_durations.append(t + 1)
+            steps.append(n_step)
             break
+
+    moy_losses.append(np.mean(losses))
+    moy_q_values.append(np.mean(q_values))
 
     # Update the target network, copying all weights and biases in DQN
     if i_episode % learning_param.TARGET_UPDATE == 0:
@@ -149,3 +164,24 @@ print('Complete')
 # Save the model after train
 torch.save(target_net.state_dict(), 'model.pth')
 print("Saved model to disk")
+
+x = np.arange(1,learning_param.num_episodes +1)
+y = moy_losses
+plt.plot(x,y)
+plt.ylabel("Iterations")
+plt.title('Average Loss')
+plt.show()
+
+x = np.arange(1,learning_param.num_episodes +1)
+y = moy_q_values
+plt.plot(x,y)
+plt.ylabel("Iterations")
+plt.title('Average Q value')
+plt.show()
+
+x = np.arange(1,learning_param.num_episodes +1)
+y = steps
+plt.plot(x,y)
+plt.ylabel("Iterations")
+plt.title('Nb steps')
+plt.show()
