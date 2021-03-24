@@ -4,7 +4,7 @@ from PIL import Image
 from torch.random import initial_seed
 import math
 
-from state import stringsToBits, step
+from state import stringsToBits, step, isWinStringState, isDeathStringState, bitsToStrings
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
 from parameters import rewards, learning_param, env
@@ -32,24 +32,6 @@ episode_durations = []
 print_freq = 5
 steps_done = 0
 n_step=0
-
-def plot_durations():
-    plt.figure(2)
-    plt.clf()
-    durations_t = torch.tensor(episode_durations, dtype=torch.float)
-    plt.title('Training...')
-    plt.xlabel('Episode')
-    plt.ylabel('Duration')
-    plt.plot(durations_t.numpy())
-    # Take 100 episode averages and plot them too
-    if len(durations_t) >= 100:
-        means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
-        means = torch.cat((torch.zeros(99), means))
-        plt.plot(means.numpy())
-
-    plt.pause(0.001)  # pause a bit so that plots are updated
-
-    plt.show()
 
 def select_action(state): #Select random a_t with probability epsilon, else a_t*
     global steps_done
@@ -136,8 +118,11 @@ for i_episode in range(learning_param.num_episodes):
         optimize_model()
         
         if done:
+            if (isWinStringState(bitsToStrings(next_state))):
+                print("WIN !")
+            if (isDeathStringState(bitsToStrings(next_state))):
+                print("DEATH !")
             episode_durations.append(t + 1)
-            #plot_durations()
             break
         
     # Update the target network, copying all weights and biases in DQN
@@ -149,5 +134,3 @@ print('Complete')
 #Save the model after train
 torch.save(target_net.state_dict(), 'model.pth')
 print("Saved model to disk")
-
-plt.show()
