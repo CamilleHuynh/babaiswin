@@ -5,11 +5,13 @@
 # python babaiswin.py
 
 
-import numpy as np
 import pygame as pg
 from spritesheet import Spritesheet
 from copy import deepcopy
-from state import stepbis, printRulesFromString, isWinStringState
+from state import stepbis, printRulesFromString, isWinStringState, stringsToBits
+from neural_net import DQN
+import torch
+from parameters import env
 
 
 # Initialize pygame
@@ -17,20 +19,17 @@ from state import stepbis, printRulesFromString, isWinStringState
 pg.mixer.pre_init(44100, -16, 2, 1024)
 pg.init()
 
-background_color = (225, 225, 225)
-
 # objects : no = vide; wo = wall; bo = baba; fo = flag;
 # text    : bt = baba; ft = flag; is = is; wt = win; yt = you
 # Ce qui est est affiché à l'écran est
-# la matrice map
+# la matrice grille
 
-state = [[["no"], ["no"], ["no"], ["no"], ["no"]],
-         [["ft"], ["no"], ["wt"], ["no"], ["no"]],
-         [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-         [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
-         [["no"], ["is"], ["wo"], ["no"], ["no"]],
-         [["no"], ["no"], ["no"], ["no"], ["fo"]]]
+# load the model
+model = DQN(env.width, env.height, env.n_actions)
+model.load_state_dict(torch.load('model.pth'))
+model.eval()
 
+state = env.grille
 
 states = [deepcopy(state)]
 
@@ -61,7 +60,7 @@ def init():
     running = True
     quitting = False
     while running:
-        screen.fill(background_color)
+        screen.fill(env.background_color)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
@@ -69,20 +68,13 @@ def init():
             elif event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     printRulesFromString(state)
-                elif event.key == pg.K_UP:
-                    stepbis(state, 0)
-                    states.append(deepcopy(state))
-                elif event.key == pg.K_RIGHT:
-                    stepbis(state, 1)
-                    states.append(deepcopy(state))
-                elif event.key == pg.K_DOWN:
-                    stepbis(state, 2)
-                    states.append(deepcopy(state))
-                elif event.key == pg.K_LEFT:
-                    stepbis(state, 3)
+                elif event.key == pg.K_p:
+                    Q = model(stringsToBits(state).unsqueeze(0))
+                    action = Q.argmax()
+                    stepbis(state, action.item())
                     states.append(deepcopy(state))
                 elif event.key == pg.K_r:
-                    if (len(states) > 1):
+                    if(len(states) > 1):
                         del states[-1]
                         state[::] = deepcopy(states[-1])
         drawState(state)
@@ -90,7 +82,7 @@ def init():
             print("Win !")
             running = False
             stateWin = [[["yt"], ["wt"]]]
-            screen.fill(background_color)
+            screen.fill(env.background_color)
             drawState(stateWin)
         pg.display.update()
     while not quitting:
