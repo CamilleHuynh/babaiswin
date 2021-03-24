@@ -8,7 +8,7 @@
 import pygame as pg
 from spritesheet import Spritesheet
 from copy import deepcopy
-from state import stepbis, printRulesFromString, isWinStringState, stringsToBits
+from state import stepbis, printRulesFromString, isWinStringState, stringsToBits, best_possible_action
 from neural_net import DQN
 import torch
 from parameters import env
@@ -69,9 +69,10 @@ def init():
                 if event.key == pg.K_SPACE:
                     printRulesFromString(state)
                 elif event.key == pg.K_p:
-                    Q = model(stringsToBits(state).unsqueeze(0))
-                    action = Q.argmax()
-                    stepbis(state, action.item())
+                    init_state = deepcopy(state)
+                    Q = model(stringsToBits(init_state).unsqueeze(0))
+                    action = best_possible_action(stringsToBits(init_state), Q)
+                    stepbis(state,action)
                     states.append(deepcopy(state))
                 elif event.key == pg.K_r:
                     if(len(states) > 1):

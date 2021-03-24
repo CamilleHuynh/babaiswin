@@ -7,7 +7,7 @@ class env:
     grille = [[["no"], ["no"], ["no"], ["no"], ["no"]],
               [["ft"], ["no"], ["wt"], ["no"], ["no"]],
               [["bt"], ["is"], ["yt"], ["no"], ["no"]],
-              [["no"], ["bo"], ["ro"], ["ro"], ["no"]],
+              [["bo"], ["no"], ["ro"], ["ro"], ["no"]],
               [["no"], ["is"], ["wo"], ["no"], ["no"]],
               [["no"], ["no"], ["no"], ["no"], ["fo"]]]
 
@@ -19,18 +19,21 @@ class env:
 
 # learning parameters
 class learning_param:
-    BATCH_SIZE = 128
+    BATCH_SIZE = 50
     GAMMA = 0.9
-    EPS_END = 0.05
+    EPS_END = 0.2
     EPS_START = 0.9
-    EPS_DECAY = 200
-    TARGET_UPDATE = 10
+    EPS_DECAY = 50
+    TARGET_UPDATE = 5
     MAX_ITERATIONS = 100
-    num_episodes = 10
+    num_episodes = 15
+    learning_rate = 0.1
 
 
 class rewards:
-    win = 10
+    win = 100
     death = -10
-    unnecessary = -5
-    default = -1
+    #something is win
+    canWin = 10
+    default = -0.01
+

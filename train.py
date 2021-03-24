@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import math
 
-from state import stringsToBits, step, isWinStringState, isDeathStringState, bitsToStrings
+from state import stringsToBits, step, isWinStringState, isDeathStringState, bitsToStrings, best_possible_action
 from neural_net import DQN
 from replay_buffer import ReplayMemory, Transition
 from parameters import rewards, learning_param, env
@@ -21,11 +21,11 @@ target_net = DQN(env.width, env.height, env.n_actions).to(device)
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
-optimizer = optim.RMSprop(policy_net.parameters())
+optimizer = optim.RMSprop(policy_net.parameters(), lr=learning_param.learning_rate)
 memory = ReplayMemory(10000)
 
 episode_durations = []
-print_freq = 5
+print_freq = 1
 steps_done = 0
 n_step = 0
 
@@ -35,20 +35,23 @@ def select_action(state):
     global steps_done
     global n_step
     sample = random.random()
-    eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END) * \
-        math.exp(-1. * steps_done / learning_param.EPS_DECAY)
+    eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END)* math.exp(-steps_done / learning_param.EPS_DECAY)
     steps_done += 1
     if sample > eps:
         Q = policy_net(state)
-        action = torch.unsqueeze(Q.max(1)[1], 0)
-        if n_step % print_freq == 0:
-            print("Select action ", action.item())
-        return action  # index of action with best reward for each row
+        action = best_possible_action(state.squeeze(0), Q)
+        if n_step%print_freq==0:
+            print("Select action ", action)
+        return torch.tensor([[action]], device=device, dtype=torch.long) 
+
     else:
-        action = torch.tensor([[random.randrange(env.n_actions)]], device=device, dtype=torch.long)
-        if n_step % print_freq == 0:
-            print("Select random action ", action.item())
-        return action
+        Q = torch.rand(1, 4)
+        #a random possible action
+        action = best_possible_action(state.squeeze(0), Q) 
+        if n_step%print_freq==0:
+            print("Select random action ", action)
+        return torch.tensor([[action]], device=device, dtype=torch.long)
+
 
 
 def optimize_model():
@@ -81,6 +84,9 @@ def optimize_model():
     next_state_values = torch.cat([target_net(s.unsqueeze(0)).max(1).values for s in batch.next_state])
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * learning_param.GAMMA) + reward_batch
+    
+    #print("expected :", next_state_values[0].item(), "new :", expected_state_action_values[0].item(), "différence :", next_state_values[0].item()-expected_state_action_values[0].item())
+
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values.unsqueeze(1), expected_state_action_values.unsqueeze(1))
@@ -99,12 +105,14 @@ for i_episode in range(learning_param.num_episodes):
     print('Episode', i_episode, '=========================================================================================================')
     # Initialize the env and state
     state = stringsToBits(env.grille)
+    #print(state[7])
     n_step = 0
     for t in count():
         # Select and perform an action
         action = select_action(torch.unsqueeze(state, 0))
         next_state, reward, done = step(state, action.item())
         reward = torch.tensor([reward], device=device)
+        #print(next_state[7])
 
         if n_step > learning_param.MAX_ITERATIONS:
             reward = rewards.death

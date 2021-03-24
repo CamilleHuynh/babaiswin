@@ -1,6 +1,8 @@
 # python -m pip install numpy
 import torch
 from parameters import rewards
+from torch.autograd.grad_mode import F
+
 
 # Fonctions pouvant être utilisées pour l'apprentissage : step
 
@@ -12,15 +14,17 @@ def step(state, action):
     upstate = torch.rot90(state, action, [1, 2])
     stepUp(upstate, babaisyou, flagisyou)
     newState = torch.rot90(upstate, -action, [1, 2])
+    #reward to be calculated according new state
+    babaiswin,babaisyou,flagiswin,flagisyou = getRules(newState)
+    
     if isWinState(newState, babaiswin, babaisyou, flagiswin, flagisyou):
         reward = rewards.win
         isFinal = True
     elif isDeathState(newState, babaisyou, flagisyou):
         reward = rewards.death
         isFinal = True
-    # negative reward for unnecessary action
-    elif torch.equal(newState, state):
-        reward = rewards.unnecessary
+    elif babaiswin or flagiswin:
+        reward = rewards.canWin
         isFinal = False
     else:
         reward = rewards.default
@@ -34,6 +38,19 @@ def stepbis(state, action):
     newState, reward, terminal = step(stringsToBits(state), action)
     state[:] = bitsToStrings(newState)[:]
     return state, reward, terminal
+
+def best_possible_action(state, Q):
+    """For state and a tensor of expected q-values, return the best possible action"""
+    x = Q[0].detach().numpy().argsort()
+    i=len(x)-1
+    action = x[i]
+    next_state, _, _ = step(state, action)
+    while torch.equal(state, next_state):
+        i-=1
+        action = x[i]
+        if i==0: return action
+        next_state, _, _ = step(state,action)
+    return action
 
 
 def stringsToBits(state):
