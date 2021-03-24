@@ -42,7 +42,7 @@ def select_action(state, q_values):
     sample = random.random()
     eps = learning_param.EPS_END + (learning_param.EPS_START - learning_param.EPS_END)* math.exp(-steps_done / learning_param.EPS_DECAY)
     steps_done += 1
-    if sample > eps:
+    if sample > learning_param.EPS_END:
         Q = policy_net(state)
         q_values.append(max(Q.cpu().detach().numpy()[0]))
         action = best_possible_action(state.squeeze(0), Q)
