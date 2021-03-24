@@ -5,11 +5,10 @@
 # python babaiswin.py
 
 
-import numpy as np
 import pygame as pg
 from spritesheet import Spritesheet
 from copy import deepcopy
-from state import rewards, stepbis, printRulesFromString, isWinStringState, stringsToBits
+from state import stepbis, printRulesFromString, isWinStringState, stringsToBits
 from neural_net import DQN
 import torch
 from parameters import env

@@ -7,9 +7,6 @@ Other libraries such as "torch" or "matplotlib" can be installed the same way
 
 
 
-
-
-
 Testing the environment :
 
 $ python babaiswin.py
