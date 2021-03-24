@@ -100,7 +100,7 @@ def optimize_model():
 
 
 for i_episode in range(learning_param.num_episodes):
-    print('Episode', i_episode, '=========================================================================================================')
+    print('Episode', i_episode, '================================================================')
     # Initialize the env and state
     state = stringsToBits(env.grille)
     #print(state[7])
@@ -125,7 +125,7 @@ for i_episode in range(learning_param.num_episodes):
         n_step += 1
 
         if n_step % print_freq == 0:
-            print(('Episode [{}/{}] - Etape {}').format(i_episode, learning_param.num_episodes, n_step))
+            print(('Episode [{}/{}] - Etape {}').format(i_episode + 1, learning_param.num_episodes, n_step))
 
         # Perform one step of the optimization (on the policy network)
         optimize_model()
